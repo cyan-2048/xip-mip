@@ -1,0 +1,79 @@
+* {
+	font-family: "Open Sans", emoji, "Noto Sans Symbols 2", sans-serif;
+	box-sizing: border-box;
+
+	background-repeat: no-repeat;
+}
+
+@font-face {
+	font-family: emoji;
+
+	@if $cloudphone {
+		src: url("https://cyan-2048.github.io/kaigram-assets/AppleColorEmoji.ttf");
+	} @else {
+		src: url("./assets/Twemoji Mozilla.ttf");
+	}
+
+	font-display: swap;
+}
+
+:root {
+	--accent-dark: #320574;
+	--accent: #873eff;
+}
+
+html,
+body {
+	padding: 0;
+	margin: 0;
+	width: 100vw;
+	height: 100vh;
+	background-color: white;
+}
+
+:focus {
+	outline: none;
+}
+
+html {
+	line-height: 1.445;
+	font-size: 17px;
+	line-height: 1.445;
+	color: #323232;
+}
+
+@font-face {
+	font-family: "gaia-icons";
+	src: url(./assets/gaia-icons.ttf) format("truetype");
+	font-weight: 500;
+	font-style: normal;
+	font-variant-numeric: nominal;
+}
+
+.LOADING::before {
+	content: "";
+	background-image: url("/icon112.png");
+	position: absolute;
+	top: 50%;
+	left: 50%;
+
+	background-repeat: no-repeat;
+	background-size: contain;
+	transform: translate(-50%, -50%);
+}
+
+.LOADING {
+	position: fixed;
+	bottom: 0;
+	height: 320px;
+	max-height: 320px;
+	width: 100vw;
+	background-color: #000;
+	color: white;
+	z-index: 999;
+
+	&::before {
+		width: 84.5px;
+		height: 84.5px;
+	}
+}

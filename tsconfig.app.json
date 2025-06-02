@@ -1,0 +1,41 @@
+{
+	"compilerOptions": {
+		"tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+		"target": "ES6",
+		"useDefineForClassFields": true,
+		"module": "ESNext",
+		"lib": ["ES2020", "DOM", "DOM.Iterable", "WebWorker", "ES2024.Promise"],
+		"skipLibCheck": true,
+
+		/* Bundler mode */
+		"moduleResolution": "bundler",
+		"allowImportingTsExtensions": true,
+		"resolveJsonModule": true,
+		"isolatedModules": true,
+		"moduleDetection": "force",
+		"noEmit": true,
+		"jsx": "preserve",
+		"jsxImportSource": "solid-js",
+
+		/* Linting */
+		"strict": true,
+		"noUnusedLocals": true,
+		"noUnusedParameters": true,
+		"noFallthroughCasesInSwitch": true,
+		"noUncheckedSideEffectImports": true,
+
+		"baseUrl": ".",
+
+		"paths": {
+			"@converse/*": ["@converse/*"],
+			"@globals": ["src/globals.ts"],
+			"@/*": ["src/*"],
+			"@workers": ["src/workers/index.ts"],
+			"@utils": ["src/utils.ts"],
+			"@ui/*": ["src/ui/*"],
+			"@stores": ["src/stores.ts"],
+			"@components/*": ["src/views/components/*"]
+		}
+	},
+	"include": ["src"]
+}

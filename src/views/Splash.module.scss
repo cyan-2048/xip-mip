@@ -1,0 +1,76 @@
+.splash {
+	animation: splashAnim 0.5s forwards;
+
+	&::before {
+		content: "";
+		background-image: url("/icon256.png");
+
+		animation: grow 0.5s forwards;
+	}
+
+	&::after {
+		content: "";
+		background-image: url("/icon-white-256.png");
+
+		animation: grow 0.5s forwards, fade 0.5s forwards;
+	}
+
+	&::after,
+	&::before {
+		width: 84.5px;
+		height: 84.5px;
+
+		position: absolute;
+
+		top: 50%;
+		left: 50%;
+
+		background-repeat: no-repeat;
+		background-size: contain;
+		transform: translate(-50%, -50%);
+	}
+}
+
+.fadeOut {
+	animation: fadeOutAnim 0.5s forwards;
+}
+
+@keyframes fadeOutAnim {
+	from {
+		opacity: 1;
+		background-color: #6800a5;
+	}
+	to {
+		opacity: 0;
+		background-color: #6800a5;
+	}
+}
+
+@keyframes fade {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+@keyframes grow {
+	from {
+		width: 84.5px;
+		height: 84.5px;
+	}
+	to {
+		width: 50vw;
+		height: 50vw;
+	}
+}
+
+@keyframes splashAnim {
+	from {
+		background-color: black;
+	}
+	to {
+		background-color: #6800a5;
+	}
+}
