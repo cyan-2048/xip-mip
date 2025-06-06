@@ -2,12 +2,204 @@ import Content from "./components/Content";
 import Header from "./components/Header";
 import KaiButton, { ButtonContainer } from "./components/KaiButton";
 import styles from "./Login.module.scss";
-import { _splashDone, setSoftkeys, setStatusbarColor } from "@/stores";
-import { createUniqueId, onCleanup, onMount } from "solid-js";
+import {
+	$boshURL,
+	$jid,
+	$password,
+	$useAdvancedSettings,
+	$wsURL,
+	_splashDone,
+	setSoftkeys,
+	setStatusbarColor,
+} from "@/stores";
+import { batch, createSignal, createUniqueId, onCleanup, onMount, Show } from "solid-js";
 import SpatialNavigation from "@/lib/spatial_navigation";
 import { alert } from "./modals";
+import TextInput from "./components/TextInput";
+import CheckboxInput from "./components/CheckboxInput";
+import { Portal } from "solid-js/web";
+import { sleep } from "@/utils";
+import scrollIntoView from "scroll-into-view-if-needed";
+import { useStore } from "@nanostores/solid";
+
+function isValidHttpUrl(maybeURL: string) {
+	try {
+		const url = new URL(maybeURL);
+		return url.protocol === "http:" || url.protocol === "https:";
+	} catch (_) {
+		return false;
+	}
+}
+
+function isValidWebSocketUrl(maybeURL: string) {
+	try {
+		const url = new URL(maybeURL);
+		return url.protocol === "ws:" || url.protocol === "wss:";
+	} catch (_) {
+		return false;
+	}
+}
+
+function SignIn(props: { onClose: () => void }) {
+	const SN_ID = createUniqueId();
+
+	const advanced = useStore($useAdvancedSettings);
+
+	onMount(() => {
+		_splashDone.then(() => {
+			setStatusbarColor("#320574");
+		});
+		setSoftkeys("Back", "", "Connect");
+
+		SpatialNavigation.add(SN_ID, {
+			selector: `.${SN_ID}`,
+			restrict: "self-only",
+		});
+
+		SpatialNavigation.focus(SN_ID);
+	});
+
+	onCleanup(() => {
+		SpatialNavigation.remove(SN_ID);
+	});
+
+	const [boshInvalid, setBoshInvalid] = createSignal(false);
+	const [wsInvalid, setWsInvalid] = createSignal(false);
+
+	const [username, setUsername] = createSignal("");
+	const [password, setPassword] = createSignal("");
+
+	return (
+		<Content mainClass={styles.login} before={<Header>Convo Login</Header>}>
+			<div
+				onKeyDown={(e) => {
+					if (import.meta.env.DEV && e.key == "Backspace") {
+						return;
+					}
+					if (e.key == "Backspace" || e.key == "SoftLeft") {
+						e.preventDefault();
+						props.onClose();
+					}
+					if (e.key == "SoftRight") {
+						batch(() => {
+							$password.set(password());
+							$jid.set(username());
+						});
+					}
+				}}
+			>
+				<div class={styles.padding}>
+					<p>Please enter your login details.</p>
+				</div>
+				<TextInput
+					on:sn-focused={(e) => {
+						e.currentTarget.scrollIntoView(false);
+					}}
+					onInput={(e) => setUsername(e.currentTarget.value)}
+					class={SN_ID}
+					value={/*@once*/ $jid.get()}
+					label="Username"
+				></TextInput>
+				<TextInput
+					on:sn-focused={(e) => {
+						scrollIntoView(e.currentTarget.parentElement!, {
+							scrollMode: "if-needed",
+							block: "nearest",
+							inline: "nearest",
+						});
+					}}
+					onInput={(e) => setPassword(e.currentTarget.value)}
+					value={/*@once*/ $password.get()}
+					class={SN_ID}
+					type="password"
+					label="Password"
+				></TextInput>
+				<CheckboxInput
+					tabIndex={0}
+					class={SN_ID}
+					on:sn-focused={(e) => {
+						scrollIntoView(e.currentTarget, {
+							scrollMode: "if-needed",
+							block: "nearest",
+							inline: "nearest",
+						});
+					}}
+					on:sn-enter-down={(e) => {
+						const currentTarget = e.currentTarget;
+						$useAdvancedSettings.set(!$useAdvancedSettings.get());
+
+						sleep().then(() => {
+							currentTarget.scrollIntoView(true);
+						});
+					}}
+					checked={advanced()}
+				>
+					Advanced settings
+				</CheckboxInput>
+				<Show when={advanced()}>
+					<TextInput
+						class={SN_ID}
+						on:sn-focused={(e) => {
+							scrollIntoView(e.currentTarget.parentElement!, {
+								scrollMode: "if-needed",
+								block: "nearest",
+								inline: "nearest",
+							});
+						}}
+						invalid={boshInvalid()}
+						onInput={(e) => {
+							const value = e.currentTarget.value;
+							if (value) {
+								const valid = isValidHttpUrl(value);
+								setBoshInvalid(!valid);
+								$boshURL.set(valid ? value : "");
+							} else {
+								setBoshInvalid(false);
+								$boshURL.set("");
+							}
+						}}
+						value={
+							/*@once*/
+							$boshURL.get()
+						}
+						label="BOSH URL"
+					></TextInput>
+					<TextInput
+						invalid={wsInvalid()}
+						on:sn-focused={(e) => {
+							scrollIntoView(e.currentTarget.parentElement!, {
+								scrollMode: "if-needed",
+								block: "nearest",
+								inline: "nearest",
+							});
+						}}
+						onInput={(e) => {
+							const value = e.currentTarget.value;
+							if (value) {
+								const valid = isValidWebSocketUrl(value);
+								setWsInvalid(!valid);
+								$wsURL.set(valid ? value : "");
+							} else {
+								setWsInvalid(false);
+								$wsURL.set("");
+							}
+						}}
+						class={SN_ID}
+						value={
+							/*@once*/
+							$wsURL.get()
+						}
+						label="WebSocket URL"
+					></TextInput>
+				</Show>
+			</div>
+		</Content>
+	);
+}
 
 export default function Login() {
+	const [showLogin, setShowLogin] = createSignal(false);
+
 	const SN_ID = createUniqueId();
 
 	onMount(() => {
@@ -29,37 +221,57 @@ export default function Login() {
 	});
 
 	return (
-		<Content before={<Header>Convo</Header>}>
-			<div
-				onKeyDown={(e) => {
-					if (e.key == "SoftLeft") {
-						// don't exit if not an actual device
-						if (import.meta.env.DEV) {
-							console.warn("window.close()");
-							return;
+		<>
+			<Content before={<Header>Convo</Header>}>
+				<div
+					onKeyDown={(e) => {
+						if (e.key == "SoftLeft") {
+							// don't exit if not an actual device
+							if (import.meta.env.DEV) {
+								console.warn("window.close()");
+								return;
+							}
+							window.close();
 						}
-						window.close();
-					}
-				}}
-			>
-				<div class={styles.padding}>
-					<p>Welcome to Convo!</p>
+					}}
+				>
+					<div class={styles.padding}>
+						<p>Welcome to Convo!</p>
+					</div>
+					<ButtonContainer>
+						<KaiButton
+							on:sn-enter-down={() => {
+								alert("Unfortunately, you cannot create an account yet :(");
+							}}
+							class={SN_ID}
+							tabIndex={0}
+						>
+							Create Account
+						</KaiButton>
+						<KaiButton
+							on:sn-enter-down={() => {
+								setShowLogin(true);
+							}}
+							class={SN_ID}
+							tabIndex={0}
+						>
+							Sign in
+						</KaiButton>
+					</ButtonContainer>
 				</div>
-				<ButtonContainer>
-					<KaiButton
-						on:sn-enter-down={() => {
-							alert("Unfortunately, you cannot create an account yet :(");
+			</Content>
+			<Show when={showLogin()}>
+				<Portal>
+					<SignIn
+						onClose={async () => {
+							setSoftkeys("Exit", "Select", "");
+							setShowLogin(false);
+							await sleep();
+							SpatialNavigation.focus(SN_ID);
 						}}
-						class={SN_ID}
-						tabIndex={0}
-					>
-						Create Account
-					</KaiButton>
-					<KaiButton class={SN_ID} tabIndex={0}>
-						Sign in
-					</KaiButton>
-				</ButtonContainer>
-			</div>
-		</Content>
+					></SignIn>
+				</Portal>
+			</Show>
+		</>
 	);
 }

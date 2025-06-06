@@ -4,9 +4,25 @@ import { _converse, converse } from "./lib/converse";
 import { getOpenPromise } from "@converse/openpromise";
 import { sleep } from "@utils";
 
+const noListen = { listen: false };
+
+const bool = {
+	decode(e: string) {
+		return Boolean(+e);
+	},
+	encode(e: boolean) {
+		return e ? "1" : "0";
+	},
+	listen: false,
+};
+
 export const $xmppConnected = atom(false);
-export const $jid = persistentAtom("jid", "", { listen: false });
-export const $password = persistentAtom("password", "", { listen: false });
+export const $jid = persistentAtom<string>("jid", "", noListen);
+export const $password = persistentAtom<string>("password", "", noListen);
+
+export const $useAdvancedSettings = persistentAtom("useAdvancedSettings", false, bool);
+export const $boshURL = persistentAtom<string>("boshURL", "", noListen);
+export const $wsURL = persistentAtom<string>("wsURL", "", noListen);
 
 // splashScreen should be waited
 export const _splashScreen = sleep(1000);
@@ -15,7 +31,7 @@ export const _loginCheckDone = getOpenPromise<void>();
 export const _splashDone = getOpenPromise<void>();
 
 type Views = "login" | "home";
-export const $view = atom<Views>("login");
+export const $view = atom<Views>("home");
 
 onMount($xmppConnected, () => {
 	let interval = setInterval(() => {
@@ -35,6 +51,7 @@ export function start() {
 	const password = $password.get();
 	if (!jid || !password) {
 		console.error("NOT LOGGED IN!");
+		$view.set("login");
 		_loginCheckDone.resolve();
 		return;
 	}

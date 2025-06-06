@@ -1,13 +1,4 @@
-import {
-	createRenderEffect,
-	createSignal,
-	Match,
-	onCleanup,
-	onMount,
-	Show,
-	Switch,
-	untrack,
-} from "solid-js";
+import { createSignal, Match, onCleanup, onMount, Show, Switch } from "solid-js";
 import { useStore } from "@nanostores/solid";
 import Splash from "./views/Splash";
 import { onBeforeMount, sleep } from "./utils";
