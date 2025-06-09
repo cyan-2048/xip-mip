@@ -1,8 +1,9 @@
-import { atom, onMount } from "nanostores";
+import { atom } from "nanostores";
 import { persistentAtom } from "@nanostores/persistent";
-import { _converse, converse } from "./lib/converse";
-import { getOpenPromise } from "@converse/openpromise";
+import { _converse, converse, ConverseConnectionStatus } from "./lib/converse";
 import { sleep } from "@utils";
+import Deferred from "./lib/Deferred";
+import { alert } from "./views/modals";
 
 const noListen = { listen: false };
 
@@ -16,75 +17,189 @@ const bool = {
 	listen: false,
 };
 
-export const $xmppConnected = atom(false);
 export const $jid = persistentAtom<string>("jid", "", noListen);
 export const $password = persistentAtom<string>("password", "", noListen);
+// force relogin
+export const $forceLogin = persistentAtom("forceLogin", true, bool);
+// set to  true if this is a manual login
+export const $manualLogin = atom(false);
+
+type Views = "login" | "home";
+export const $view = atom<Views>($forceLogin.get() ? "login" : "home");
 
 export const $useAdvancedSettings = persistentAtom("useAdvancedSettings", false, bool);
+
 export const $boshURL = persistentAtom<string>("boshURL", "", noListen);
 export const $wsURL = persistentAtom<string>("wsURL", "", noListen);
+
+export const $loginConnecting = atom(false);
+
+export const $connectionStatus = atom<ConverseConnectionStatus | null>(null);
+
+$connectionStatus.subscribe((status) => {
+	if (!status) return;
+
+	switch (status) {
+		case "AUTHFAIL":
+		case "CONNFAIL":
+			$forceLogin.set(true);
+			$loginConnecting.set(false);
+			_loginCheckDone.resolve();
+
+			$view.set("login");
+
+			const message = getConnectionStatusMessage();
+
+			sleep(100).then(() => alert(message));
+			break;
+
+		case "CONNECTING":
+		case "AUTHENTICATING":
+		case "RECONNECTING":
+			$loginConnecting.set(true);
+			break;
+	}
+});
 
 // splashScreen should be waited
 export const _splashScreen = sleep(1000);
 // resolve this once view should be able to change
-export const _loginCheckDone = getOpenPromise<void>();
-export const _splashDone = getOpenPromise<void>();
+export const _loginCheckDone = new Deferred<void>();
+export const _splashDone = new Deferred<void>();
 
-type Views = "login" | "home";
-export const $view = atom<Views>("home");
+function loginSucessful() {
+	$forceLogin.set(false);
+	$loginConnecting.set(false);
 
-onMount($xmppConnected, () => {
-	let interval = setInterval(() => {
-		let status = _converse.api.connection.connected() || false;
-		$xmppConnected.set(status);
+	$view.set("home");
 
-		if (status) clearInterval(interval);
-	}, 1000);
+	_loginCheckDone.resolve();
+}
 
-	return function stop() {
-		clearInterval(interval);
-	};
+function getConnectionStatus() {
+	return _converse.constants.CONNECTION_STATUS[
+		_converse.state.connfeedback.get(
+			"connection_status"
+		) as keyof typeof _converse.constants.CONNECTION_STATUS
+	];
+}
+
+function getConnectionStatusMessage() {
+	return _converse.state.connfeedback.get("message") as string;
+}
+
+function initConvo() {
+	// this part seems to be unnecessary?
+	// const { _converse } = this;
+
+	// const log = _converse.log;
+
+	_converse.state.connfeedback.on("change:connection_status", () => {
+		console.log(
+			"connection_status",
+			getConnectionStatus(),
+			_converse.state.connfeedback.get("message")
+		);
+		$connectionStatus.set(getConnectionStatus());
+	});
+
+	$connectionStatus.set(getConnectionStatus());
+	console.log(
+		"connection_status",
+		getConnectionStatus(),
+		_converse.state.connfeedback.get("message")
+	);
+
+	_converse.api.listen.on("connected", () => {
+		loginSucessful();
+	});
+
+	_converse.api.listen.on("reconnected", () => {
+		// loginSucessful();
+	});
+
+	_converse.api.listen.on("message", (msg: any) => {
+		console.log(`${msg.attrs.from} says: ${msg.attrs.body}`);
+	});
+
+	// these events are dispatched if _converse.roster.models changes
+	_converse.api.listen.on("rosterInitialized", () => {
+		console.log("rosterInitialized", _converse.roster.models);
+	});
+	_converse.api.listen.on("rosterContactsFetched", () => {
+		console.log("rosterContactsFetched", _converse.roster.models);
+	});
+
+	_converse.api.listen.on("pluginsInitialized", function () {
+		// We only register event handlers after all plugins are
+		// registered, because other plugins might override some of our
+		// handlers.
+		//_converse.api.listen.on('message', m => console.log('message', m));
+
+		console.log("Handlers ready!");
+
+		// emoji don't seem to be getting initialized,
+		// so let's do it manually
+		_converse.api.emojis.initialize();
+	});
+}
+
+converse.plugins.add("convo", {
+	initialize: initConvo,
 });
 
-export function start() {
+const _init = converse
+	.initialize({
+		whitelisted_plugins: ["convo"],
+		auto_login: false,
+		auto_reconnect: true,
+
+		loglevel: "debug", // make 'debug' for debugging
+		// allow_non_roster_messaging: true,
+		roster_groups: true,
+
+		// if the login page is forced, set it to undefined
+		password: $forceLogin.get() ? undefined : $password.get() || undefined,
+		jid: $forceLogin.get() ? undefined : $jid.get() || undefined,
+
+		authentication: "login",
+
+		// Special optimisations to reduce memory usage on KaiOS
+		muc_fetch_members: ["owner"], // no admin or member, to reduce load
+		archived_messages_page_size: 10,
+		// prune_messages_above: 30,
+
+		// BOSH and WebSocket configuration
+		// bosh_service_url: ($useAdvancedSettings && $boshURL) || undefined,
+		// websocket_url: ($useAdvancedSettings && $wsURL) || undefined,
+	})
+	.catch(() => {
+		console.error("initializing error!");
+	});
+
+export async function start() {
 	const jid = $jid.get();
 	const password = $password.get();
-	if (!jid || !password) {
-		console.error("NOT LOGGED IN!");
-		$view.set("login");
-		_loginCheckDone.resolve();
-		return;
-	}
+	const forceLogin = $forceLogin.get();
+	const manualLogin = $manualLogin.get();
 
-	converse
-		.initialize({
-			jid: jid,
-			password: password,
-			whitelisted_plugins: ["convo"],
-			debug: true,
-			auto_login: true,
-			loglevel: "debug", // make 'debug' for debugging
-			forward_messages: false,
-			enable_smacks: true,
-			allow_chat_pending_contacts: true,
-			allow_non_roster_messaging: true,
-			roster_groups: false,
+	$loginConnecting.set(true);
 
-			// Special optimisations to reduce memory usage on KaiOS
-			mam_request_all_pages: false,
-			muc_fetch_members: ["owner"], // no admin or member, to reduce load
-			muc_respect_autojoin: false,
-			archived_messages_page_size: 10,
-			prune_messages_above: 30,
+	await _init;
 
-			// BOSH and WebSocket configuration
-			// bosh_service_url: ($useAdvancedSettings && $boshURL) || undefined,
-			// websocket_url: ($useAdvancedSettings && $wsURL) || undefined,
-		})
-		.then(() => {
-			$view.set("home");
+	if (!manualLogin) {
+		if (forceLogin || !jid || !password) {
+			console.error("NOT LOGGED IN");
+			$view.set("login");
+			$loginConnecting.set(false);
 			_loginCheckDone.resolve();
-		});
+
+			return;
+		}
+	} else {
+		_converse.api.settings.set({ password, jid });
+		_converse.api.user.login(jid);
+	}
 }
 
 start();

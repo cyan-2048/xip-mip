@@ -16,6 +16,7 @@ import kaiManifest from "./scripts/manifest";
 
 const isKai3 = process.env.KAIOS == "3";
 const isCloudphone = process.env.CLOUDPHONE == "1";
+const isCanary = process.env.CANARY == "1";
 const production = process.env.NODE_ENV === "production";
 
 const manifest = JSON.parse(
@@ -97,23 +98,48 @@ export default defineConfig({
 		alias: [
 			{
 				find: "@converse/headless",
-				replacement: fileURLToPath(new URL("./@converse/headless/", import.meta.url)),
+				replacement: fileURLToPath(new URL("./node_modules/@converse/headless/", import.meta.url)),
 			},
 			{
-				find: "@converse/localforage-getitems",
-				replacement: fileURLToPath(new URL("./@converse/localforage-getitems/", import.meta.url)),
-			},
-			{
-				find: "@converse/openpromise",
-				replacement: fileURLToPath(new URL("./@converse/openpromise/", import.meta.url)),
+				find: "@converse/skeletor/src",
+				replacement: fileURLToPath(
+					new URL("./node_modules/@converse/skeletor/src/", import.meta.url)
+				),
 			},
 			{
 				find: "@converse/skeletor",
-				replacement: fileURLToPath(new URL("./@converse/skeletor/", import.meta.url)),
+				replacement: fileURLToPath(
+					new URL("./node_modules/@converse/skeletor/src/", import.meta.url)
+				),
 			},
 			{
 				find: "@converse/log",
-				replacement: fileURLToPath(new URL("./@converse/log/", import.meta.url)),
+				replacement: fileURLToPath(new URL("./scripts/converse_log.js", import.meta.url)),
+			},
+			{
+				find: "localforage-webextensionstorage-driver/local",
+				replacement: fileURLToPath(new URL("./scripts/nil.js", import.meta.url)),
+			},
+			{
+				find: "localforage-webextensionstorage-driver/sync",
+				replacement: fileURLToPath(new URL("./scripts/nil.js", import.meta.url)),
+			},
+			{
+				find: "lit",
+				replacement: fileURLToPath(new URL("./scripts/converse_lit.js", import.meta.url)),
+			},
+			{
+				find: "lit-html",
+				replacement: fileURLToPath(new URL("./scripts/converse_lit.js", import.meta.url)),
+			},
+
+			{
+				find: "events",
+				replacement: "eventemitter2",
+			},
+			{
+				find: "node:events",
+				replacement: "eventemitter2",
 			},
 		],
 	},
@@ -154,12 +180,17 @@ export default defineConfig({
 		"import.meta.env.CLOUDPHONE": !production || isCloudphone,
 		"import.meta.env.DEV": !production,
 		"import.meta.env.PROD": production,
+		"import.meta.env.CANARY": isCanary,
 		"import.meta.env.VITE_APP_ID": process.env.VITE_APP_ID || 0,
 		"import.meta.env.VITE_APP_HASH": JSON.stringify(process.env.VITE_APP_HASH || ""),
 		"import.meta.env.VITE_DEBUG_URL": JSON.stringify(process.env.VITE_DEBUG_URL || ""),
 		"import.meta.env.APP_VERSION": JSON.stringify(
 			isKai3 ? manifest.b2g_features.version : manifest.version
 		),
+		// replace XMLHttpRequest calls
+		XMLHttpRequest: !production ? "XMLHttpRequest" : "_custom_XMLHttpRequest",
+		// replace conversejs fetch calls
+		fetch: !production ? "fetch" : "_custom_fetch",
 	},
 
 	worker: {

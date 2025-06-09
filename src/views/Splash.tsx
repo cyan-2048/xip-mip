@@ -9,7 +9,7 @@ export default function Splash(props: { setShow: (v: boolean) => void }) {
 	onMount(() => {
 		setStatusbarColor("#6800a5");
 
-		Promise.all([_splashScreen, _loginCheckDone]).then(() => {
+		Promise.all([_splashScreen, _loginCheckDone.promise]).then(() => {
 			setFade(true);
 			_splashDone.resolve();
 			sleep(400).then(() => {

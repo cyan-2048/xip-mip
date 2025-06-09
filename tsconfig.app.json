@@ -27,7 +27,8 @@
 		"baseUrl": ".",
 
 		"paths": {
-			"@converse/*": ["@converse/*"],
+			"@converse/headless": ["node_modules/@converse/index.js"],
+			"@converse/headless/*": ["node_modules/@converse/headless/*"],
 			"@globals": ["src/globals.ts"],
 			"@/*": ["src/*"],
 			"@workers": ["src/workers/index.ts"],

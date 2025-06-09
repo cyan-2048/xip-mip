@@ -7,6 +7,7 @@ import Modals from "./views/modals";
 import { $view } from "./stores";
 import Login from "./views/Login";
 import SpatialNavigation from "./lib/spatial_navigation";
+import Home from "./views/Home";
 
 export default function App() {
 	const [showSplash, setShowSplash] = createSignal(true);
@@ -57,6 +58,9 @@ export default function App() {
 			<Switch>
 				<Match when={view() == "login"}>
 					<Login></Login>
+				</Match>
+				<Match when={view() == "home"}>
+					<Home></Home>
 				</Match>
 			</Switch>
 			<Modals></Modals>

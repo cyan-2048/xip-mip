@@ -31,6 +31,31 @@
 	}
 }
 
+.splash_frozen {
+	background-color: #6800a5 !important;
+
+	&::before {
+		display: none;
+	}
+
+	&::after {
+		content: "";
+		background-image: url("/icon-white-256.png");
+
+		width: 50vw;
+		height: 50vw;
+
+		position: absolute;
+
+		top: 50%;
+		left: 50%;
+
+		background-repeat: no-repeat;
+		background-size: contain;
+		transform: translate(-50%, -50%);
+	}
+}
+
 .fadeOut {
 	animation: fadeOutAnim 0.5s forwards;
 }

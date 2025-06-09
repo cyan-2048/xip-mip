@@ -5,8 +5,13 @@ import * as utils from "@utils";
 import * as stores from "@stores";
 import * as modals from "@/views/modals";
 import localforage from "localforage";
+import { converse, _converse } from "./lib/converse";
 
 Object.assign(window, {
+	converse,
+	_converse,
+	localforage,
+
 	$: {
 		nanostores,
 		utils,
