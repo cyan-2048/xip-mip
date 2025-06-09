@@ -5,6 +5,20 @@ import { sleep } from "@utils";
 import Deferred from "./lib/Deferred";
 import { alert } from "./views/modals";
 
+class Connection {
+	static get status() {
+		return _converse.constants.CONNECTION_STATUS[
+			_converse.state.connfeedback.get(
+				"connection_status"
+			) as keyof typeof _converse.constants.CONNECTION_STATUS
+		];
+	}
+
+	static get message() {
+		return _converse.state.connfeedback.get("message") as string;
+	}
+}
+
 const noListen = { listen: false };
 
 const bool = {
@@ -37,18 +51,21 @@ export const $loginConnecting = atom(false);
 export const $connectionStatus = atom<ConverseConnectionStatus | null>(null);
 
 $connectionStatus.subscribe((status) => {
+	if (status !== null) console.log("connection_status", Connection.status, Connection.message);
+
 	if (!status) return;
 
 	switch (status) {
 		case "AUTHFAIL":
 		case "CONNFAIL":
 			$forceLogin.set(true);
+			localStorage.removeItem("conversejs-session-jid");
 			$loginConnecting.set(false);
 			_loginCheckDone.resolve();
 
 			$view.set("login");
 
-			const message = getConnectionStatusMessage();
+			const message = Connection.message;
 
 			sleep(100).then(() => alert(message));
 			break;
@@ -76,18 +93,6 @@ function loginSucessful() {
 	_loginCheckDone.resolve();
 }
 
-function getConnectionStatus() {
-	return _converse.constants.CONNECTION_STATUS[
-		_converse.state.connfeedback.get(
-			"connection_status"
-		) as keyof typeof _converse.constants.CONNECTION_STATUS
-	];
-}
-
-function getConnectionStatusMessage() {
-	return _converse.state.connfeedback.get("message") as string;
-}
-
 function initConvo() {
 	// this part seems to be unnecessary?
 	// const { _converse } = this;
@@ -95,20 +100,8 @@ function initConvo() {
 	// const log = _converse.log;
 
 	_converse.state.connfeedback.on("change:connection_status", () => {
-		console.log(
-			"connection_status",
-			getConnectionStatus(),
-			_converse.state.connfeedback.get("message")
-		);
-		$connectionStatus.set(getConnectionStatus());
+		$connectionStatus.set(Connection.status);
 	});
-
-	$connectionStatus.set(getConnectionStatus());
-	console.log(
-		"connection_status",
-		getConnectionStatus(),
-		_converse.state.connfeedback.get("message")
-	);
 
 	_converse.api.listen.on("connected", () => {
 		loginSucessful();
@@ -116,6 +109,7 @@ function initConvo() {
 
 	_converse.api.listen.on("reconnected", () => {
 		// loginSucessful();
+		console.log("Reconnected!");
 	});
 
 	_converse.api.listen.on("message", (msg: any) => {

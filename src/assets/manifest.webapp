@@ -1,8 +1,6 @@
 {
 	"name": "Xip-Mip",
 	"description": "Experimental XMPP client for KaiOS.",
-	"display": "Xip-Mip",
-	"short_name": "Xip-Mip",
 	"version": "1.0.10",
 	"launch_path": "/index.html",
 	"theme": "#fff",
@@ -33,10 +31,6 @@
 			"description": "Needed for assocating service worker"
 		},
 		"desktop-notification": {},
-		"tcp-socket": { "description": "Required to do any TCP" },
-		"storage": {},
-		"device-storage:sdcard": { "access": "readwrite" },
-		"contacts": { "access": "readonly" },
 		"volumemanager": {}
 	},
 	"dependencies": {

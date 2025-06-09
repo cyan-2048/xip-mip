@@ -154,10 +154,10 @@ import "systemjs/dist/s.js";
 import "systemjs/dist/extras/amd.js";
 import "./event-target.js";
 import "./abort-controller.js";
-import { fetch } from "./fetch.js";
+import { fetch_factory } from "./fetch.js";
 
 // this is required for KaiOS 3.0 too
-self._custom_fetch = fetch;
+self._custom_fetch = fetch_factory();
 
 class SystemXMLHttpRequest extends XMLHttpRequest {
 	constructor() {

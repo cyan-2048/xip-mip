@@ -19,9 +19,16 @@ const isCloudphone = process.env.CLOUDPHONE == "1";
 const isCanary = process.env.CANARY == "1";
 const production = process.env.NODE_ENV === "production";
 
+// TODO: make a manifest file for KaiOS 3.0
 const manifest = JSON.parse(
 	fs.readFileSync("./src/assets/" + (isKai3 ? "manifest.webmanifest" : "manifest.webapp"), "utf8")
 );
+
+if (isCanary) {
+	if (!isKai3) {
+		manifest.name += " Canary";
+	}
+}
 
 function codeReplacer(src: string, codes: Array<[string, string] | false | null | undefined>) {
 	for (let i = 0; i < codes.length; i++) {
