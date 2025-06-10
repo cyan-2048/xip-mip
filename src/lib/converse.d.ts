@@ -1,3 +1,4 @@
+import type { Profile, RosterContact, RosterContacts, _converse as __converse } from "@converse/headless";
 import EventEmitter2 from "eventemitter2";
 
 // TODO: get rid of deprecated settings
@@ -57,6 +58,8 @@ interface ConverseApi {
 	user: {
 		login(jid: string, password?: string, automatic?: boolean): Promise<void>;
 	};
+
+	waitUntil<T = unknown>(...args: any[]): Promise<T>;
 }
 
 interface ConverseConstants {
@@ -73,18 +76,25 @@ interface ConverseConstants {
 		9: "REDIRECT";
 		13: "RECONNECTING";
 	}>;
+	[x: string]: any;
 }
 
 export type ConverseConnectionStatus =
 	ConverseConstants["CONNECTION_STATUS"][keyof ConverseConstants["CONNECTION_STATUS"]];
 
+class ConverseRosterContacts extends RosterContacts {
+	[Symbol.iterator](): Iterator<RosterContact>;
+}
+
 // TODO: add proper types for these
 export const converse: Converse;
-export const _converse: Omit<
-	import("@converse/headless/types/shared/api")._converse,
-	"api" | "constants"
-> & {
+export const _converse: Omit<typeof __converse, "api" | "constants" | "state"> & {
 	api: ConverseApi;
-	roster: any;
+	roster: ConverseRosterContacts;
 	constants: ConverseConstants;
+	state: {
+		[x: string]: any;
+		roster: ConverseRosterContacts;
+		xmppstatus: Profile;
+	};
 };

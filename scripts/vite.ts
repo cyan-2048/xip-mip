@@ -330,21 +330,6 @@ export default function polyfillKaiOS(): PluginOption {
 						text +
 						"\n"
 				);
-
-				// const opus = resolve(config.root, config.build.outDir, "opusscript_native_nasm.js");
-				// console.log(opus);
-				// fs.writeFileSync(opus, opusNativeScript);
-
-				// const indexJS = resolve(config.root, config.build.outDir, "index.js");
-				// // console.log(indexJS);
-				// fs.writeFileSync(
-				// 	indexJS,
-				// 	jsFiles
-				// 		.map((file, i) => {
-				// 			return `var script${i} = document.createElement("script");script${i}.src = "${file}";document.head.appendChild(script${i});`;
-				// 		})
-				// 		.join("")
-				// );
 			},
 
 			generateBundle(options, bundle) {

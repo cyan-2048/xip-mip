@@ -2,6 +2,7 @@ import { onMount } from "solid-js";
 import Content from "./components/Content";
 import styles from "./Home.module.scss";
 import { setSoftkeys } from "@/stores";
+import RosterView from "./rosterview/RosterView";
 
 export default function Home() {
 	onMount(() => {
@@ -10,7 +11,7 @@ export default function Home() {
 
 	return (
 		<Content>
-			<div></div>
+			<RosterView></RosterView>
 		</Content>
 	);
 }

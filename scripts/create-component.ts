@@ -1,4 +1,3 @@
-import fs from "fs";
 import path from "path";
 
 const componentsFolder = path.resolve(__dirname, "../src/views/components");

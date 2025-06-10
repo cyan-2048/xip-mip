@@ -1,23 +1,6 @@
 import fs from "fs";
 import { resolve } from "path";
-// import crypto from "crypto";
 import { PluginOption, ResolvedConfig } from "vite";
-
-// import checker from "license-checker";
-//
-// checker.init(
-// 	{
-// 		excludePrivatePackages: true,
-// 		start: resolve(__dirname, "../"),
-// 		summary: true,
-// 	},
-// 	(err, packages) => {
-// 		if (err) {
-// 		} else {
-// 			console.log(packages);
-// 		}
-// 	}
-// );
 
 // the plugin should only work if you're building for KaiOS
 const production = process.env.NODE_ENV === "production";
@@ -25,8 +8,6 @@ const production = process.env.NODE_ENV === "production";
 export default function kaiManifest({ isKai3 = false, manifest = {} }: any): PluginOption {
 	let config: ResolvedConfig;
 
-	// let integrityJS = "";
-	// let indexJS = "";
 	const asmFiles: string[] = [];
 	const wasmFiles: string[] = [];
 	const memFiles: string[] = [];
@@ -40,8 +21,6 @@ export default function kaiManifest({ isKai3 = false, manifest = {} }: any): Plu
 			},
 
 			async writeBundle() {
-				// console.log("WRITE BUNDLE");
-
 				const manifestFileName = isKai3 ? "manifest.webmanifest" : "manifest.webapp";
 
 				const distFolder = resolve(config.root, config.build.outDir);
@@ -69,21 +48,6 @@ export default function kaiManifest({ isKai3 = false, manifest = {} }: any): Plu
 
 				fs.writeFileSync(manifestFilePath, JSON.stringify(manifest));
 				await Bun.write(buildsFolder, JSON.stringify(manifest));
-
-				// const buffer = fs.readFileSync(resolve(config.root, config.build.outDir, indexJS));
-				// const indexBuffer = fs.readFileSync(resolve(config.root, config.build.outDir, "index.html"));
-
-				// console.log(config.build.outDir, asmFiles);
-
-				// const file = resolve(config.root, config.build.outDir, integrityJS);
-				// const text = fs.readFileSync(file, "utf-8");
-				// fs.writeFileSync(
-				// 	file,
-				// 	text
-				// 		.replace('"MANIFEST_GOES_HERE"', JSON.stringify(manifest))
-				// 		.replace("MAIN_HASH_GOES_HERE", crypto.hash("sha256", buffer))
-				// 		.replace("HTML_HASH_GOES_HERE", crypto.hash("sha256", indexBuffer))
-				// );
 			},
 
 			generateBundle(options, bundle) {
@@ -101,9 +65,6 @@ export default function kaiManifest({ isKai3 = false, manifest = {} }: any): Plu
 						if (fileName.includes("asm")) {
 							asmFiles.push(fileName);
 						}
-
-						// if (fileName.includes("checkIntegrity")) integrityJS = fileName;
-						// if (!indexJS && fileName.includes("index")) indexJS = fileName;
 					}
 				}
 			},

@@ -1,4 +1,3 @@
-import fs from "fs";
 import path from "path";
 
 const viewsFolder = path.resolve(__dirname, "../src/views");

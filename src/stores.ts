@@ -8,9 +8,7 @@ import { alert } from "./views/modals";
 class Connection {
 	static get status() {
 		return _converse.constants.CONNECTION_STATUS[
-			_converse.state.connfeedback.get(
-				"connection_status"
-			) as keyof typeof _converse.constants.CONNECTION_STATUS
+			_converse.state.connfeedback.get("connection_status") as keyof typeof _converse.constants.CONNECTION_STATUS
 		];
 	}
 
@@ -81,8 +79,9 @@ $connectionStatus.subscribe((status) => {
 // splashScreen should be waited
 export const _splashScreen = sleep(1000);
 // resolve this once view should be able to change
-export const _loginCheckDone = new Deferred<void>();
-export const _splashDone = new Deferred<void>();
+export const _loginCheckDone = new Deferred();
+export const _splashDone = new Deferred();
+export const _converse_ready = new Deferred();
 
 function loginSucessful() {
 	$forceLogin.set(false);
@@ -94,9 +93,6 @@ function loginSucessful() {
 }
 
 function initConvo() {
-	// this part seems to be unnecessary?
-	// const { _converse } = this;
-
 	// const log = _converse.log;
 
 	_converse.state.connfeedback.on("change:connection_status", () => {
@@ -116,9 +112,8 @@ function initConvo() {
 		console.log(`${msg.attrs.from} says: ${msg.attrs.body}`);
 	});
 
-	// these events are dispatched if _converse.roster.models changes
-	_converse.api.listen.on("rosterInitialized", () => {
-		console.log("rosterInitialized", _converse.roster.models);
+	_converse.api.listen.once("rosterInitialized", () => {
+		console.log("rosterInitialized", _converse.state.roster);
 	});
 	_converse.api.listen.on("rosterContactsFetched", () => {
 		console.log("rosterContactsFetched", _converse.roster.models);
@@ -131,6 +126,10 @@ function initConvo() {
 		//_converse.api.listen.on('message', m => console.log('message', m));
 
 		console.log("Handlers ready!");
+
+		_converse_ready.resolve();
+
+		_converse.labels.HEADER_PENDING_CONTACTS = "Pending contacts";
 
 		// emoji don't seem to be getting initialized,
 		// so let's do it manually

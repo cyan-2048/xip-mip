@@ -1,4 +1,6 @@
-import { createRenderEffect, untrack } from "solid-js";
+import { Store, StoreValue } from "nanostores";
+import { Accessor, createRenderEffect, createSignal, onCleanup, untrack } from "solid-js";
+import { useStore as _useStore } from "@nanostores/solid";
 
 export const NOOP = () => {};
 
@@ -26,4 +28,31 @@ export function sleep(ms: void | number) {
  */
 export function onBeforeMount(fn: () => void) {
 	createRenderEffect(() => untrack(fn));
+}
+
+/**
+ * custom behavior
+ *
+ * @param store Store instance.
+ * @returns Store value.
+ */
+export function useStore<SomeStore extends Store, Value extends StoreValue<SomeStore>>(
+	store: SomeStore | (() => SomeStore | undefined)
+): Accessor<Value> {
+	// if it's a function we do my implementation
+	if (typeof store == "function") {
+		const [state, setState] = createSignal(store()?.value);
+
+		createRenderEffect(() => {
+			const unsub = store()?.subscribe((val) => {
+				setState(val);
+			});
+
+			unsub && onCleanup(unsub);
+		});
+
+		return state;
+	}
+
+	return _useStore(store);
 }
