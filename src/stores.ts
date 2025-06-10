@@ -1,6 +1,6 @@
 import { atom } from "nanostores";
 import { persistentAtom } from "@nanostores/persistent";
-import { _converse, converse, ConverseConnectionStatus } from "./lib/converse";
+import { _converse, converse, ConverseConnectionStatus } from "@convo";
 import { sleep } from "@utils";
 import Deferred from "./lib/Deferred";
 import { alert } from "./views/modals";
@@ -128,8 +128,6 @@ function initConvo() {
 		console.log("Handlers ready!");
 
 		_converse_ready.resolve();
-
-		_converse.labels.HEADER_PENDING_CONTACTS = "Pending contacts";
 
 		// emoji don't seem to be getting initialized,
 		// so let's do it manually

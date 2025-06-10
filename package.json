@@ -16,7 +16,7 @@
 		"create-component": "bun ./scripts/create-component.ts"
 	},
 	"dependencies": {
-		"@converse/headless": "^11.0.0",
+		"@converse/headless": "11.0.1",
 		"@nanostores/persistent": "^1.0.0",
 		"@nanostores/solid": "^1.0.0",
 		"comlink": "^4.4.2",

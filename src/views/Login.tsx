@@ -15,15 +15,7 @@ import {
 	setStatusbarColor,
 	start,
 } from "@/stores";
-import {
-	batch,
-	createEffect,
-	createSignal,
-	createUniqueId,
-	onCleanup,
-	onMount,
-	Show,
-} from "solid-js";
+import { batch, createEffect, createSignal, createUniqueId, onCleanup, onMount, Show } from "solid-js";
 import SpatialNavigation from "@/lib/spatial_navigation";
 import { alert } from "./modals";
 import TextInput from "./components/TextInput";
@@ -32,7 +24,7 @@ import { Portal } from "solid-js/web";
 import { sleep } from "@/utils";
 import scrollIntoView from "scroll-into-view-if-needed";
 import { useStore } from "@nanostores/solid";
-import { _converse } from "@/lib/converse";
+import { _converse } from "@convo";
 
 function isValidHttpUrl(maybeURL: string) {
 	try {

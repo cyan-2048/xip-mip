@@ -1,7 +1,7 @@
 import { createStore, reconcile } from "solid-js/store";
 import { For, onCleanup, onMount } from "solid-js";
 import CustomElement from "@/lib/CustomElement";
-import { _converse } from "@/lib/converse";
+import { _converse } from "@convo";
 import type { Profile, RosterContact } from "@converse/headless";
 import {
 	contactsComparator,
@@ -12,6 +12,7 @@ import {
 	shouldShowGroup,
 } from "./utils";
 import { _converse_ready } from "@/stores";
+import RosterContactView from "./RosterContactView";
 
 export default function RosterView() {
 	const [state, setState] = createStore<Array<{ id: string; contacts: Array<Profile | RosterContact>; name: string }>>(
@@ -41,8 +42,7 @@ export default function RosterView() {
 						const contacts = contacts_map[name].filter((c) => shouldShowContact(c, name));
 						contacts.sort(contactsComparator);
 						return { contacts, id: name, name };
-					}),
-					{ merge: true }
+					})
 				)
 			);
 		};
@@ -83,7 +83,10 @@ export default function RosterView() {
 			<For each={state}>
 				{({ name, contacts }) => (
 					<div>
-						{name} ({contacts.length})
+						<div>
+							{name} ({contacts.length})
+						</div>
+						<For each={contacts}>{(model) => <RosterContactView model={model}></RosterContactView>}</For>
 					</div>
 				)}
 			</For>

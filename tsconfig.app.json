@@ -33,7 +33,8 @@
 			"@utils": ["src/utils.ts"],
 			"@ui/*": ["src/ui/*"],
 			"@stores": ["src/stores.ts"],
-			"@components/*": ["src/views/components/*"]
+			"@components/*": ["src/views/components/*"],
+			"@convo": ["src/lib/converse"]
 		}
 	},
 	"include": ["src"]

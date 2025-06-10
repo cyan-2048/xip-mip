@@ -109,19 +109,11 @@ export default defineConfig({
 			},
 			{
 				find: "@converse/skeletor/src",
-				replacement: fileURLToPath(
-					new URL("./node_modules/@converse/skeletor/src/", import.meta.url)
-				),
+				replacement: fileURLToPath(new URL("./node_modules/@converse/skeletor/src/", import.meta.url)),
 			},
 			{
 				find: "@converse/skeletor",
-				replacement: fileURLToPath(
-					new URL("./node_modules/@converse/skeletor/src/", import.meta.url)
-				),
-			},
-			{
-				find: "@converse/log",
-				replacement: fileURLToPath(new URL("./scripts/converse_log.js", import.meta.url)),
+				replacement: fileURLToPath(new URL("./node_modules/@converse/skeletor/src/", import.meta.url)),
 			},
 			{
 				find: "localforage-webextensionstorage-driver/local",
@@ -191,9 +183,7 @@ export default defineConfig({
 		"import.meta.env.VITE_APP_ID": process.env.VITE_APP_ID || 0,
 		"import.meta.env.VITE_APP_HASH": JSON.stringify(process.env.VITE_APP_HASH || ""),
 		"import.meta.env.VITE_DEBUG_URL": JSON.stringify(process.env.VITE_DEBUG_URL || ""),
-		"import.meta.env.APP_VERSION": JSON.stringify(
-			isKai3 ? manifest.b2g_features.version : manifest.version
-		),
+		"import.meta.env.APP_VERSION": JSON.stringify(isKai3 ? manifest.b2g_features.version : manifest.version),
 		// replace XMLHttpRequest calls
 		XMLHttpRequest: !production ? "XMLHttpRequest" : "_custom_XMLHttpRequest",
 		// replace conversejs fetch calls

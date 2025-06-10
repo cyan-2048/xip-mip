@@ -41,15 +41,6 @@
 			"serviceworker-notification": "/index.html"
 		}
 	],
-	"locales": {
-		"en-US": {
-			"name": "Xip-Mip",
-			"subtitle": "Experimental XMPP client for KaiOS.",
-			"description": "Experimental XMPP client for KaiOS.",
-			"display": "Xip-Mip",
-			"short_name": "Xip-Mip"
-		}
-	},
 
 	"priority": "high",
 

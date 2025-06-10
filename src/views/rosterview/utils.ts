@@ -1,4 +1,4 @@
-import { _converse } from "@/lib/converse";
+import { _converse } from "@convo";
 import type { Profile, RosterContact } from "@converse/headless";
 
 function getFilterCriteria(contact: Profile | RosterContact) {
