@@ -1,6 +1,16 @@
 import CustomElement from "@/lib/CustomElement";
 import type { VCard, Profile, RosterContact } from "@converse/headless";
-import { batch, createEffect, createRenderEffect, createSignal, Match, onCleanup, Switch, untrack } from "solid-js";
+import {
+	batch,
+	createEffect,
+	createMemo,
+	createRenderEffect,
+	createSignal,
+	Match,
+	onCleanup,
+	Switch,
+	untrack,
+} from "solid-js";
 import Avatar from "../converse/Avatar";
 
 const enum ContactTypes {
@@ -9,7 +19,7 @@ const enum ContactTypes {
 	Unsaved,
 }
 
-type ContactStatus = ReturnType<Profile["getStatus"]>;
+type ContactStatus = ReturnType<Profile["getStatus"]> | "dnd" | "away";
 
 function getUnreadMsgsDisplay(model: Profile | RosterContact) {
 	const num_unread = model.get("num_unread") || 0;
@@ -81,6 +91,20 @@ function RosterItem(props: {
 	displayName: string; // el.model.getDisplayName({ context: 'roster' })
 	model: Profile | RosterContact;
 }) {
+	const statusColor = createMemo(() => {
+		switch (props.status) {
+			case "online":
+				return "chat-status-online";
+			case "dnd":
+				return "chat-status-busy";
+			case "away":
+				return "chat-status-away";
+
+			default:
+				return "chat-status-offline";
+		}
+	});
+
 	return (
 		<div>
 			<ul>
@@ -88,7 +112,9 @@ function RosterItem(props: {
 					<Avatar model={props.model} height={30} width={30} name={props.displayName}></Avatar>
 				</li>
 				<li>type: RosterItem</li>
-				<li>status: {props.status}</li>
+				<li>
+					status: {props.status} ({statusColor()})
+				</li>
 				<li>jid: {props.jid}</li>
 				<li>num_unread: {props.num_unread}</li>
 				<li>displayName: {props.displayName}</li>
