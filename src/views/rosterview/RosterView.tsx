@@ -1,7 +1,7 @@
 import { createStore, reconcile } from "solid-js/store";
 import { For, onCleanup, onMount } from "solid-js";
 import CustomElement from "@/lib/CustomElement";
-import { _converse } from "@convo";
+import { _converse, api } from "@convo";
 import type { Profile, RosterContact } from "@converse/headless";
 import {
 	contactsComparator,
@@ -49,7 +49,7 @@ export default function RosterView() {
 
 		async initialize() {
 			await _converse_ready.promise;
-			await _converse.api.waitUntil("rosterInitialized");
+			await api.waitUntil("rosterInitialized");
 
 			const render = this.render;
 

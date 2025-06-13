@@ -1,3 +1,3 @@
-import { converse, _converse } from "@converse/headless";
+import { converse, _converse, api, constants } from "@converse/headless";
 
-export { _converse, converse };
+export { _converse, converse, api, constants };

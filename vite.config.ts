@@ -6,7 +6,7 @@ import { fileURLToPath, URL } from "url";
 
 import commonjs from "vite-plugin-commonjs";
 import tsconfigPaths from "vite-tsconfig-paths";
-import polyfillKaiOS, { polyfillKaiOSWorker } from "./scripts/vite";
+import polyfillKaiOS, { libsignalInjector, polyfillKaiOSWorker } from "./scripts/vite";
 import kaiManifest from "./scripts/manifest";
 
 // import dotenv from "dotenv";
@@ -46,17 +46,22 @@ function codeReplacer(src: string, codes: Array<[string, string] | false | null 
 	}
 }
 
-const fixTelegram = () => ({
-	name: "add-window-worker",
+const fixCode = () => ({
+	name: "code-fixer",
 
 	transform(src: string) {
 		return codeReplacer(src, [
+			// Firefox 48 has an issue with destructuring
+			// https://github.com/evanw/esbuild/issues/4195#issuecomment-2941180303
 			[`...[_unused, type]`, `_unused, type`],
 			[`...[store, options]`, `store, options`],
 			[
 				`input > 2n ** 32n || input < -(2n ** 32n)`,
 				`input > BigInt(2) ** BigInt(32) || input < -(BigInt(2) ** BigInt(32))`,
 			],
+
+			// minisearch patch
+			// https://github.com/lucaong/minisearch/issues/286
 			!isKai3 &&
 				production && [
 					"/[\\n\\r\\p{Z}\\p{P}]+/u",
@@ -66,6 +71,7 @@ const fixTelegram = () => ({
 	},
 });
 
+// use this if you notice major lag spikes on your computer
 const MAX_WORKERS = Number(process.env.MAX_WORKERS) || undefined;
 
 export default defineConfig({
@@ -82,7 +88,8 @@ export default defineConfig({
 			isKai3,
 			manifest,
 		}),
-		fixTelegram(),
+		libsignalInjector(),
+		fixCode(),
 	],
 
 	esbuild: {
@@ -131,7 +138,8 @@ export default defineConfig({
 				find: "lit-html",
 				replacement: fileURLToPath(new URL("./scripts/converse_lit.js", import.meta.url)),
 			},
-
+			// apparently a faster alternative to npm:events
+			// I usually use eventemitter3 but converse uses the removed methods
 			{
 				find: "events",
 				replacement: "eventemitter2",
@@ -200,6 +208,6 @@ export default defineConfig({
 				},
 			},
 		},
-		plugins: () => [fixTelegram(), commonjs(), polyfillKaiOSWorker()],
+		plugins: () => [fixCode(), commonjs(), polyfillKaiOSWorker()],
 	},
 });

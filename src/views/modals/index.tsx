@@ -14,36 +14,24 @@ const enum Modal {
 	Select,
 }
 
-export function alert(text = "", title = "TeleKram") {
+export function alert(text = "", title = "Convo") {
 	return alert.v(text, title);
 }
 
 alert.v = (_text: string, _title: string): Promise<void> => Promise.resolve();
 
-export function confirm(text = "", title = "TeleKram", yes = "OK", no = "Cancel") {
+export function confirm(text = "", title = "Convo", yes = "OK", no = "Cancel") {
 	return confirm.v(text, title, yes, no);
 }
 
-confirm.v = (_text: string, _title: string, _yes: string, _no: string): Promise<boolean> =>
-	Promise.resolve(false);
+confirm.v = (_text: string, _title: string, _yes: string, _no: string): Promise<boolean> => Promise.resolve(false);
 
-export function prompt(
-	text = "",
-	defaultValue = "",
-	title = "TeleKram",
-	yes = "OK",
-	no = "Cancel"
-) {
+export function prompt(text = "", defaultValue = "", title = "Convo", yes = "OK", no = "Cancel") {
 	return prompt.v(text, defaultValue, title, yes, no);
 }
 
-prompt.v = (
-	_text: string,
-	_defaultValue: string,
-	_title: string,
-	_yes: string,
-	_no: string
-): Promise<string | null> => Promise.resolve(null);
+prompt.v = (_text: string, _defaultValue: string, _title: string, _yes: string, _no: string): Promise<string | null> =>
+	Promise.resolve(null);
 
 export function select<T>(arr: [string, T][], selected?: T) {
 	return select.v(arr, selected);

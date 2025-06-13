@@ -1,17 +1,8 @@
 import CustomElement from "@/lib/CustomElement";
 import type { VCard, Profile, RosterContact } from "@converse/headless";
-import {
-	batch,
-	createEffect,
-	createMemo,
-	createRenderEffect,
-	createSignal,
-	Match,
-	onCleanup,
-	Switch,
-	untrack,
-} from "solid-js";
+import { batch, createMemo, createRenderEffect, createSignal, Match, onCleanup, Show, Switch, untrack } from "solid-js";
 import Avatar from "../converse/Avatar";
+import { RosterContactSubscription } from "@/lib/converse";
 
 const enum ContactTypes {
 	Default,
@@ -89,6 +80,7 @@ function RosterItem(props: {
 	jid: string;
 	num_unread: string;
 	displayName: string; // el.model.getDisplayName({ context: 'roster' })
+	subscription: RosterContactSubscription;
 	model: Profile | RosterContact;
 }) {
 	const statusColor = createMemo(() => {
@@ -99,7 +91,6 @@ function RosterItem(props: {
 				return "chat-status-busy";
 			case "away":
 				return "chat-status-away";
-
 			default:
 				return "chat-status-offline";
 		}
@@ -112,9 +103,9 @@ function RosterItem(props: {
 					<Avatar model={props.model} height={30} width={30} name={props.displayName}></Avatar>
 				</li>
 				<li>type: RosterItem</li>
-				<li>
-					status: {props.status} ({statusColor()})
-				</li>
+				<Show when={props.subscription == "both" || props.subscription == "to"}>
+					<li>status: {props.status}</li>
+				</Show>
 				<li>jid: {props.jid}</li>
 				<li>num_unread: {props.num_unread}</li>
 				<li>displayName: {props.displayName}</li>
@@ -130,6 +121,7 @@ export default function RosterContactView(props: { model: RosterContact | Profil
 	const [num_unread, setNumUnread] = createSignal("");
 	const [displayName, setDisplayName] = createSignal("");
 	const [vcard_updated, setVcardUpdated] = createSignal("");
+	const [subscription, setSubscription] = createSignal<RosterContactSubscription>();
 
 	class _RosterContactView extends CustomElement {
 		render = () => {
@@ -151,6 +143,7 @@ export default function RosterContactView(props: { model: RosterContact | Profil
 					displayNameContext = { context: "roster" };
 					setContactType(ContactTypes.Default);
 					setStatus(props.model.getStatus() || "offline");
+					setSubscription(props.model.get("subscription"));
 				}
 
 				setDisplayName(
@@ -203,6 +196,7 @@ export default function RosterContactView(props: { model: RosterContact | Profil
 						displayName={displayName()}
 						model={props.model}
 						num_unread={num_unread()}
+						subscription={subscription()!}
 					></RosterItem>
 				</Match>
 				<Match when={contactType() == ContactTypes.Unsaved}>

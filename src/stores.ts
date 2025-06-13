@@ -1,19 +1,17 @@
 import { atom } from "nanostores";
 import { persistentAtom } from "@nanostores/persistent";
-import { _converse, converse, ConverseConnectionStatus } from "@convo";
+import { _converse, api, constants, converse, ConverseConnectionStatus } from "@convo";
 import { sleep } from "@utils";
 import Deferred from "./lib/Deferred";
 import { alert } from "./views/modals";
 
 class Connection {
 	static get status() {
-		return _converse.constants.CONNECTION_STATUS[
-			_converse.state.connfeedback.get("connection_status") as keyof typeof _converse.constants.CONNECTION_STATUS
-		];
+		return constants.CONNECTION_STATUS[_converse.state.connfeedback.get("connection_status")];
 	}
 
 	static get message() {
-		return _converse.state.connfeedback.get("message") as string;
+		return _converse.state.connfeedback.get("message");
 	}
 }
 
@@ -99,31 +97,31 @@ function initConvo() {
 		$connectionStatus.set(Connection.status);
 	});
 
-	_converse.api.listen.on("connected", () => {
+	api.listen.on("connected", () => {
 		loginSucessful();
 	});
 
-	_converse.api.listen.on("reconnected", () => {
+	api.listen.on("reconnected", () => {
 		// loginSucessful();
 		console.log("Reconnected!");
 	});
 
-	_converse.api.listen.on("message", (msg: any) => {
+	api.listen.on("message", (msg: any) => {
 		console.log(`${msg.attrs.from} says: ${msg.attrs.body}`);
 	});
 
-	_converse.api.listen.once("rosterInitialized", () => {
+	api.listen.once("rosterInitialized", () => {
 		console.log("rosterInitialized", _converse.state.roster);
 	});
-	_converse.api.listen.on("rosterContactsFetched", () => {
+	api.listen.on("rosterContactsFetched", () => {
 		console.log("rosterContactsFetched", _converse.roster.models);
 	});
 
-	_converse.api.listen.on("pluginsInitialized", function () {
+	api.listen.on("pluginsInitialized", function () {
 		// We only register event handlers after all plugins are
 		// registered, because other plugins might override some of our
 		// handlers.
-		//_converse.api.listen.on('message', m => console.log('message', m));
+		//api.listen.on('message', m => console.log('message', m));
 
 		console.log("Handlers ready!");
 
@@ -131,7 +129,7 @@ function initConvo() {
 
 		// emoji don't seem to be getting initialized,
 		// so let's do it manually
-		_converse.api.emojis.initialize();
+		api.emojis.initialize();
 	});
 }
 
@@ -139,13 +137,15 @@ converse.plugins.add("convo", {
 	initialize: initConvo,
 });
 
+const isDebug = import.meta.env.DEV || import.meta.env.CANARY;
+
 const _init = converse
 	.initialize({
 		whitelisted_plugins: ["convo"],
 		auto_login: false,
 		auto_reconnect: true,
 
-		loglevel: "debug", // make 'debug' for debugging
+		loglevel: isDebug ? "debug" : "error",
 		// allow_non_roster_messaging: true,
 		roster_groups: true,
 
@@ -188,8 +188,8 @@ export async function start() {
 			return;
 		}
 	} else {
-		_converse.api.settings.set({ password, jid });
-		_converse.api.user.login(jid);
+		api.settings.set({ password, jid });
+		api.user.login(jid);
 	}
 }
 

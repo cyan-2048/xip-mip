@@ -1,44 +1,27 @@
-import type { Profile, RosterContact, RosterContacts, _converse as __converse } from "@converse/headless";
+import type {
+	Profile,
+	RosterContact,
+	RosterContacts,
+	_converse as __converse,
+	api as _api,
+	constants as _constants,
+} from "@converse/headless";
 import EventEmitter2 from "eventemitter2";
-
-// TODO: get rid of deprecated settings
-interface ConverseSettings {
-	jid: string;
-	password: string;
-	whitelisted_plugins: string[];
-	auto_login: boolean;
-	loglevel: "debug" | "info" | "warn" | "error" | "fatal"; // make 'debug' for debugging
-	forward_messages: boolean;
-	enable_smacks: boolean;
-	allow_chat_pending_contacts: boolean;
-	allow_non_roster_messaging: boolean;
-	roster_groups: boolean;
-
-	// Special optimisations to reduce memory usage on KaiOS
-	mam_request_all_pages: boolean;
-	muc_fetch_members: string[];
-	muc_respect_autojoin: boolean;
-	archived_messages_page_size: number;
-	prune_messages_above: number;
-
-	// BOSH and WebSocket configuration
-	bosh_service_url: string;
-	websocket_url: string;
-
-	authentication: "login" | "external" | "anonymous" | "prebind";
-	auto_reconnect: boolean;
-}
+import { RosterContactAttributes } from "node_modules/@converse/headless/types/plugins/roster/types";
+import { ConverseConfig } from "./converse_config";
 
 interface ConversePlugins {
 	add(name: string, plugin: Record<string, (this: { _converse: typeof _converse }) => void>): void;
 }
 
 interface Converse {
-	initialize: (settings: Partial<ConverseSettings>) => Promise<void>;
+	initialize: (settings: Partial<ConverseConfig>) => Promise<void>;
 	plugins: ConversePlugins;
 }
 
-interface ConverseApi {
+type API = typeof _api;
+
+interface ConverseApi extends API {
 	listen: {
 		on: EventEmitter2["on"];
 		once: EventEmitter2["on"];
@@ -62,7 +45,9 @@ interface ConverseApi {
 	waitUntil<T = unknown>(...args: any[]): Promise<T>;
 }
 
-interface ConverseConstants {
+type _Constants = typeof _constants;
+
+interface ConverseConstants extends _Constants {
 	CONNECTION_STATUS: Readonly<{
 		0: "ERROR";
 		1: "CONNECTING";
@@ -86,15 +71,33 @@ class ConverseRosterContacts extends RosterContacts {
 	[Symbol.iterator](): Iterator<RosterContact>;
 }
 
+interface ConnectionFeedback {
+	get(attr: "connection_status"): keyof ConverseConstants["CONNECTION_STATUS"];
+	get(attr: "message"): string;
+
+	on: any;
+}
+
+export type RosterContactSubscription = RosterContactAttributes["subscription"];
+
 // TODO: add proper types for these
 export const converse: Converse;
-export const _converse: Omit<typeof __converse, "api" | "constants" | "state"> & {
+export const _converse: Omit<
+	typeof __converse,
+	// replace incorrect "any"
+	"api" | "constants" | "state"
+> & {
 	api: ConverseApi;
 	roster: ConverseRosterContacts;
 	constants: ConverseConstants;
 	state: {
 		[x: string]: any;
+		connfeedback: ConnectionFeedback;
 		roster: ConverseRosterContacts;
 		xmppstatus: Profile;
 	};
 };
+
+export const constants: ConverseConstants;
+
+export const api: ConverseApi;

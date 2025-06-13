@@ -1,8 +1,9 @@
 import esbuild from "esbuild";
 import fs from "fs";
 import { resolve } from "path";
-import { JSDOM } from "jsdom";
+import * as cheerio from "cheerio";
 import { PluginOption, ResolvedConfig } from "vite";
+import { minify } from "html-minifier-terser";
 
 const isKai3 = process.env.KAIOS == "3";
 // the plugin should only work if you're building for KaiOS
@@ -287,30 +288,26 @@ export default function polyfillKaiOS(): PluginOption {
 			},
 
 			transformIndexHtml(html) {
-				const dom = new JSDOM(html);
+				const $ = cheerio.load(html);
 
-				const document = dom.window.document;
-				document.querySelectorAll("script").forEach((script) => {
-					jsFiles.push(script.getAttribute("src"));
-					if (!isKai3) script.setAttribute("type", "systemjs-module");
-					script.removeAttribute("crossorigin");
+				$("script").each(function () {
+					const script = $(this);
+					jsFiles.push(script.attr("src"));
+
+					if (!isKai3) script.attr("type", "systemjs-module");
+					script.removeAttr("crossorigin");
 				});
 
-				// document.head.prepend(
-				// 	Object.assign(document.createElement("script"), {
-				// 		src: "/index.js",
-				// 		defer: true,
-				// 	})
-				// );
-
-				document.head.prepend(
-					Object.assign(document.createElement("script"), {
-						src: "polyfills.js",
-						defer: true,
-					})
+				$("head").prepend(
+					`<script src="polyfills.js" defer></script><script src="libsignal-protocol.js" defer></script>`
 				);
 
-				return dom.serialize();
+				$("link").each(function () {
+					const link = $(this);
+					link.removeAttr("crossorigin");
+				});
+
+				return minify($.html(), { collapseWhitespace: true, collapseBooleanAttributes: true });
 			},
 
 			writeBundle() {
@@ -388,4 +385,26 @@ export function polyfillKaiOSWorker(): PluginOption {
 				}
 			},
 		};
+}
+
+export function libsignalInjector(): PluginOption {
+	return {
+		name: "libsignal-dev-inject",
+		apply: "serve", // Only run in dev (not build)
+		transformIndexHtml(html) {
+			return {
+				html,
+				tags: [
+					{
+						tag: "script",
+						attrs: {
+							src: "/libsignal-protocol.js",
+							defer: "",
+						},
+						injectTo: "head-prepend",
+					},
+				],
+			};
+		},
+	};
 }

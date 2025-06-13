@@ -39,7 +39,9 @@ export default function kaiManifest({ isKai3 = false, manifest = {} }: any): Plu
 						fs.rmSync(resolve(distFolder, a));
 					});
 				} else {
-					manifest.precompile = asmFiles;
+					manifest.precompile ||= [];
+
+					manifest.precompile.push(...asmFiles);
 
 					wasmFiles.forEach((a) => {
 						fs.rmSync(resolve(distFolder, a));
