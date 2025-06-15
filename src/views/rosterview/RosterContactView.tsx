@@ -1,8 +1,18 @@
 import CustomElement from "@/lib/CustomElement";
-import type { VCard, Profile, RosterContact } from "@converse/headless";
+import { type VCard, type Profile, type RosterContact, _converse } from "@converse/headless";
 import { batch, createMemo, createRenderEffect, createSignal, Match, onCleanup, Show, Switch, untrack } from "solid-js";
 import Avatar from "../converse/Avatar";
 import { RosterContactSubscription } from "@/lib/converse";
+import Dialog, {
+	DialogCount,
+	DialogDescription,
+	DialogDetails,
+	DialogIcon,
+	DialogMeta,
+	DialogName,
+	DialogTime,
+} from "../converse/Dialog";
+import MarqueeOrNot from "../components/MarqueeOrNot";
 
 const enum ContactTypes {
 	Default,
@@ -24,25 +34,54 @@ function RequestingContact(props: {
 	vcard_updated: string;
 	model: Profile | RosterContact;
 }) {
+	const [focused, setFocused] = createSignal(false);
+
 	return (
-		<div>
-			<ul>
-				<li>
-					<Avatar
-						model={props.model}
-						height={30}
-						width={30}
-						name={props.displayName}
-						nonce={props.vcard_updated}
-					></Avatar>
-				</li>
-				<li>type: RequestingContact</li>
-				<li>jid: {props.jid}</li>
-				<li>num_unread: {props.num_unread}</li>
-				<li>displayName: {props.displayName}</li>
-				<li>vcard_updated: {props.vcard_updated}</li>
-			</ul>
-		</div>
+		<>
+			<Dialog classList={{ focusable: true }} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}>
+				<DialogIcon>
+					<Avatar nonce={props.vcard_updated} model={props.model} size={32} name={props.displayName}></Avatar>
+				</DialogIcon>
+				<DialogDetails
+					top={
+						<>
+							<DialogName>
+								<MarqueeOrNot marquee={focused()}>{props.displayName}</MarqueeOrNot>
+							</DialogName>
+							<DialogTime></DialogTime>
+						</>
+					}
+					bottom={
+						<>
+							<Show when={props.num_unread && props.num_unread != "0"}>
+								<DialogDescription></DialogDescription>
+								<DialogMeta>
+									<DialogCount>{props.num_unread}</DialogCount>
+								</DialogMeta>
+							</Show>
+						</>
+					}
+				/>
+			</Dialog>
+		</>
+		// <div>
+		// 	<ul>
+		// 		<li>
+		// 			<Avatar
+		// 				model={props.model}
+		// 				height={30}
+		// 				width={30}
+		// 				name={props.displayName}
+		// 				nonce={props.vcard_updated}
+		// 			></Avatar>
+		// 		</li>
+		// 		<li>type: RequestingContact</li>
+		// 		<li>jid: {props.jid}</li>
+		// 		<li>num_unread: {props.num_unread}</li>
+		// 		<li>displayName: {props.displayName}</li>
+		// 		<li>vcard_updated: {props.vcard_updated}</li>
+		// 	</ul>
+		// </div>
 	);
 }
 
@@ -53,25 +92,54 @@ function UnsavedContact(props: {
 	vcard_updated: string;
 	model: Profile | RosterContact;
 }) {
+	const [focused, setFocused] = createSignal(false);
+
 	return (
-		<div>
-			<ul>
-				<li>
-					<Avatar
-						model={props.model}
-						height={30}
-						width={30}
-						name={props.displayName}
-						nonce={props.vcard_updated}
-					></Avatar>
-				</li>
-				<li>type: UnsavedContact</li>
-				<li>jid: {props.jid}</li>
-				<li>num_unread: {props.num_unread}</li>
-				<li>displayName: {props.displayName}</li>
-				<li>vcard_updated: {props.vcard_updated}</li>
-			</ul>
-		</div>
+		<>
+			<Dialog classList={{ focusable: true }} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}>
+				<DialogIcon>
+					<Avatar nonce={props.vcard_updated} model={props.model} size={32} name={props.displayName}></Avatar>
+				</DialogIcon>
+				<DialogDetails
+					top={
+						<>
+							<DialogName>
+								<MarqueeOrNot marquee={focused()}>{props.displayName}</MarqueeOrNot>
+							</DialogName>
+							<DialogTime></DialogTime>
+						</>
+					}
+					bottom={
+						<>
+							<Show when={props.num_unread && props.num_unread != "0"}>
+								<DialogDescription></DialogDescription>
+								<DialogMeta>
+									<DialogCount>{props.num_unread}</DialogCount>
+								</DialogMeta>
+							</Show>
+						</>
+					}
+				/>
+			</Dialog>
+		</>
+		// <div>
+		// 	<ul>
+		// 		<li>
+		// 			<Avatar
+		// 				model={props.model}
+		// 				height={30}
+		// 				width={30}
+		// 				name={props.displayName}
+		// 				nonce={props.vcard_updated}
+		// 			></Avatar>
+		// 		</li>
+		// 		<li>type: UnsavedContact</li>
+		// 		<li>jid: {props.jid}</li>
+		// 		<li>num_unread: {props.num_unread}</li>
+		// 		<li>displayName: {props.displayName}</li>
+		// 		<li>vcard_updated: {props.vcard_updated}</li>
+		// 	</ul>
+		// </div>
 	);
 }
 
@@ -96,21 +164,50 @@ function RosterItem(props: {
 		}
 	});
 
+	const isSelf = createMemo(() => props.jid === _converse.session.get("bare_jid"));
+
+	const [focused, setFocused] = createSignal(false);
+
 	return (
-		<div>
-			<ul>
-				<li>
-					<Avatar model={props.model} height={30} width={30} name={props.displayName}></Avatar>
-				</li>
-				<li>type: RosterItem</li>
-				<Show when={props.subscription == "both" || props.subscription == "to"}>
-					<li>status: {props.status}</li>
-				</Show>
-				<li>jid: {props.jid}</li>
-				<li>num_unread: {props.num_unread}</li>
-				<li>displayName: {props.displayName}</li>
-			</ul>
-		</div>
+		<>
+			<Dialog classList={{ focusable: true }} onFocus={() => setFocused(true)} onBlur={() => setFocused(false)}>
+				<DialogIcon>
+					<Avatar model={props.model} size={32} name={props.displayName}></Avatar>
+				</DialogIcon>
+				<DialogDetails
+					top={
+						<>
+							<DialogName>
+								<MarqueeOrNot marquee={focused()}>
+									{props.displayName} {isSelf() ? "(me)" : ""}
+								</MarqueeOrNot>
+							</DialogName>
+							<DialogTime></DialogTime>
+						</>
+					}
+					bottom={
+						<>
+							<Show when={props.num_unread && props.num_unread != "0"}>
+								<DialogDescription></DialogDescription>
+								<DialogMeta>
+									<DialogCount>{props.num_unread}</DialogCount>
+								</DialogMeta>
+							</Show>
+						</>
+					}
+				/>
+				{/* <ul>
+					<li></li>
+					<li>type: RosterItem</li>
+					<Show when={props.subscription == "both" || props.subscription == "to"}>
+						<li>status: {props.status}</li>
+					</Show>
+					<li>jid: {props.jid}</li>
+					<li>num_unread: {props.num_unread}</li>
+					<li>displayName: {props.displayName}</li>
+				</ul> */}
+			</Dialog>
+		</>
 	);
 }
 

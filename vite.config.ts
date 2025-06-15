@@ -159,10 +159,8 @@ export default defineConfig({
 		modulePreload: false,
 		reportCompressedSize: false,
 
-		// there seems to be an issue with esbuild
-		// when I minify with esbuild a bunch of errors occur
-		minify: false, // "terser",
-		cssMinify: true,
+		minify: isCanary ? false : "esbuild",
+		cssMinify: !isCanary,
 		ssr: false,
 		sourcemap: false,
 
@@ -175,6 +173,9 @@ export default defineConfig({
 
 		rollupOptions: {
 			output: {
+				manualChunks: {
+					vendor: ["@converse/headless"],
+				},
 				format: isKai3 ? "esm" : "systemjs",
 			},
 		},

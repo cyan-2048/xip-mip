@@ -42,6 +42,8 @@
 		}
 	],
 
+	"precompile": ["libsignal-protocol.js"],
+
 	"priority": "high",
 
 	"default_locale": "en"

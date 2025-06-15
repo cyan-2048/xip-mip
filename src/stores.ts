@@ -97,10 +97,6 @@ function initConvo() {
 		$connectionStatus.set(Connection.status);
 	});
 
-	api.listen.on("connected", () => {
-		loginSucessful();
-	});
-
 	api.listen.on("reconnected", () => {
 		// loginSucessful();
 		console.log("Reconnected!");
@@ -110,11 +106,8 @@ function initConvo() {
 		console.log(`${msg.attrs.from} says: ${msg.attrs.body}`);
 	});
 
-	api.listen.once("rosterInitialized", () => {
-		console.log("rosterInitialized", _converse.state.roster);
-	});
-	api.listen.on("rosterContactsFetched", () => {
-		console.log("rosterContactsFetched", _converse.roster.models);
+	api.listen.on("connected", () => {
+		loginSucessful();
 	});
 
 	api.listen.on("pluginsInitialized", function () {
@@ -145,19 +138,22 @@ const _init = converse
 		auto_login: false,
 		auto_reconnect: true,
 
-		loglevel: isDebug ? "debug" : "error",
-		// allow_non_roster_messaging: true,
-		roster_groups: true,
+		loglevel: isDebug ? "debug" : "info",
+		allow_non_roster_messaging: true,
+		muc_show_logs_before_join: true,
+		auto_away: 300,
+		message_archiving: "always",
+		notify_all_room_messages: true,
+		fetch_url_headers: true,
+		show_controlbox_by_default: true,
 
 		// if the login page is forced, set it to undefined
 		password: $forceLogin.get() ? undefined : $password.get() || undefined,
 		jid: $forceLogin.get() ? undefined : $jid.get() || undefined,
 
-		authentication: "login",
-
 		// Special optimisations to reduce memory usage on KaiOS
 		muc_fetch_members: ["owner"], // no admin or member, to reduce load
-		archived_messages_page_size: 10,
+		// archived_messages_page_size: 10,
 		// prune_messages_above: 30,
 
 		// BOSH and WebSocket configuration

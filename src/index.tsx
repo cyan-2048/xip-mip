@@ -6,3 +6,5 @@ import "./styles.scss";
 import "./dev.ts";
 
 render(() => <App />, document.body);
+
+console.log("LIBSIGNAL", window.libsignal);

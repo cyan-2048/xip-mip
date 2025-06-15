@@ -1,16 +1,21 @@
-import { onMount } from "solid-js";
 import Content from "./components/Content";
-import styles from "./Home.module.scss";
-import { setSoftkeys } from "@/stores";
-import RosterView from "./rosterview/RosterView";
 
-export default function Home() {
-	onMount(() => {
-		setSoftkeys("HI", "HI", "HI");
-	});
+import Tabs, { Tab } from "./components/Tabs";
+import { lazy } from "solid-js";
 
+const RosterView = lazy(() => import("./rosterview/RosterView"));
+
+export default function Home(props: { hidden?: boolean }) {
 	return (
-		<Content>
+		<Content
+			hidden={props.hidden}
+			before={
+				<Tabs>
+					<Tab selected>Contacts</Tab>
+					<Tab>Groupchats</Tab>
+				</Tabs>
+			}
+		>
 			<RosterView></RosterView>
 		</Content>
 	);

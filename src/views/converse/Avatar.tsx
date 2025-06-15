@@ -1,6 +1,6 @@
 import styles from "./Avatar.module.scss";
 import type { Profile, RosterContact } from "@converse/headless";
-import { batch, createRenderEffect, createSignal, mergeProps, Show, untrack } from "solid-js";
+import { batch, createMemo, createRenderEffect, createSignal, mergeProps, Show, untrack } from "solid-js";
 
 function getInitials(name: string) {
 	if (!name) return "";
@@ -21,6 +21,10 @@ export default function Avatar(props_: {
 	height?: number;
 	nonce?: string; // apparently used to trigger rerenders
 	name?: string;
+	/**
+	 * use this if square
+	 */
+	size?: number;
 }) {
 	const props = mergeProps(
 		{
@@ -69,6 +73,14 @@ export default function Avatar(props_: {
 		});
 	});
 
+	const size = createMemo(() => {
+		const size = props.size;
+		const width = props.width;
+		const height = props.height;
+
+		return size != null ? { width: size, height: size } : { width, height };
+	});
+
 	return (
 		<Show
 			when={src()}
@@ -76,10 +88,10 @@ export default function Avatar(props_: {
 				<div
 					class={styles.avatar}
 					style={{
-						width: `${props.width}px`,
-						height: `${props.height}px`,
-						"font-size": `${props.width / 2}px`,
-						"line-height": `${props.height}px`,
+						width: `${size().width}px`,
+						height: `${size().height}px`,
+						"font-size": `${size().width / 2}px`,
+						"line-height": `${size().height}px`,
 						"background-color": color() || "gray",
 					}}
 				>

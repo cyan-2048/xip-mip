@@ -1,13 +1,14 @@
-import { createSignal, Match, onCleanup, onMount, Show, Switch } from "solid-js";
+import { createSignal, lazy, Match, onCleanup, onMount, Show, Switch } from "solid-js";
 import { useStore } from "@nanostores/solid";
 import Splash from "./views/Splash";
 import { onBeforeMount, sleep } from "./utils";
 import Softkeys from "./views/components/Softkeys";
 import Modals from "./views/modals";
 import { $view } from "./stores";
-import Login from "./views/Login";
 import SpatialNavigation from "./lib/spatial_navigation";
 import Home from "./views/Home";
+
+const Login = lazy(() => import("./views/Login"));
 
 export default function App() {
 	const [showSplash, setShowSplash] = createSignal(true);

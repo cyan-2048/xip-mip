@@ -1,6 +1,6 @@
 ;(function(){
 var Internal = {};
-window.libsignal = {};
+window.libsignal = window.libsignal || {};
 // The Module object: Our interface to the outside world. We import
 // and export values on it, and do the work to get that through
 // closure compiler if necessary. There are various ways Module can be used:
@@ -25374,11 +25374,11 @@ Curve25519Worker.prototype = {
  */
 (function(global, factory) {
 
-    /* AMD */ if (typeof define === 'function' && define["amd"])
-        define([], factory);
-    /* CommonJS */ else if (typeof require === 'function' && typeof module === "object" && module && module["exports"])
-        module["exports"] = factory();
-    /* Global */ else
+    // /* AMD */ if (typeof define === 'function' && define["amd"])
+    //     define([], factory);
+    // /* CommonJS */ else if (typeof require === 'function' && typeof module === "object" && module && module["exports"])
+    //     module["exports"] = factory();
+    // /* Global */ else
         (global["dcodeIO"] = global["dcodeIO"] || {})["Long"] = factory();
 
 })(this, function() {
@@ -29842,14 +29842,14 @@ Curve25519Worker.prototype = {
         return ByteBuffer;
     }
 
-    /* CommonJS */ if (typeof require === 'function' && typeof module === 'object' && module && typeof exports === 'object' && exports)
-        module['exports'] = (function() {
-            var Long; try { Long = require("long"); } catch (e) {}
-            return loadByteBuffer(Long);
-        })();
-    /* AMD */ else if (typeof define === 'function' && define["amd"])
-        define("ByteBuffer", ["Long"], function(Long) { return loadByteBuffer(Long); });
-    /* Global */ else
+    // /* CommonJS */ if (typeof require === 'function' && typeof module === 'object' && module && typeof exports === 'object' && exports)
+    //     module['exports'] = (function() {
+    //         var Long; try { Long = require("long"); } catch (e) {}
+    //         return loadByteBuffer(Long);
+    //     })();
+    // /* AMD */ else if (typeof define === 'function' && define["amd"])
+    //     define("ByteBuffer", ["Long"], function(Long) { return loadByteBuffer(Long); });
+    // /* Global */ else
         (global["dcodeIO"] = global["dcodeIO"] || {})["ByteBuffer"] = loadByteBuffer(global["dcodeIO"]["Long"]);
 
 })(this);
@@ -29877,11 +29877,11 @@ Curve25519Worker.prototype = {
  */
 (function(global, factory) {
 
-    /* AMD */ if (typeof define === 'function' && define["amd"])
-        define(["bytebuffer"], factory);
-    /* CommonJS */ else if (typeof require === "function" && typeof module === "object" && module && module["exports"])
-        module["exports"] = factory(require("bytebuffer"), true);
-    /* Global */ else
+    // /* AMD */ if (typeof define === 'function' && define["amd"])
+    //     define(["bytebuffer"], factory);
+    // /* CommonJS */ else if (typeof require === "function" && typeof module === "object" && module && module["exports"])
+    //     module["exports"] = factory(require("bytebuffer"), true);
+    // /* Global */ else
         (global["dcodeIO"] = global["dcodeIO"] || {})["ProtoBuf"] = factory(global["dcodeIO"]["ByteBuffer"]);
 
 })(this, function(ByteBuffer, isCommonJS) {

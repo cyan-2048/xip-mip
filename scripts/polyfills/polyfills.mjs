@@ -101,9 +101,7 @@ if (import.meta.env.KAIOS != 3) {
 			const docFrag = document.createDocumentFragment();
 
 			args.forEach((argItem) =>
-				docFrag.appendChild(
-					argItem instanceof Node ? argItem : document.createTextNode(String(argItem))
-				)
+				docFrag.appendChild(argItem instanceof Node ? argItem : document.createTextNode(String(argItem)))
 			);
 
 			return docFrag;
@@ -136,9 +134,7 @@ if (import.meta.env.KAIOS != 3) {
 					var docFrag = document.createDocumentFragment();
 
 					argArr.forEach(function (argItem) {
-						docFrag.appendChild(
-							argItem instanceof Node ? argItem : document.createTextNode(String(argItem))
-						);
+						docFrag.appendChild(argItem instanceof Node ? argItem : document.createTextNode(String(argItem)));
 					});
 
 					this.parentNode.insertBefore(docFrag, this.nextSibling);
@@ -164,5 +160,7 @@ class SystemXMLHttpRequest extends XMLHttpRequest {
 		super({ mozSystem: true, mozAnon: true });
 	}
 }
+
+window.libsignal ||= {};
 
 self._custom_XMLHttpRequest = SystemXMLHttpRequest;

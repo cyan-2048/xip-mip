@@ -4,8 +4,10 @@ import { resolve } from "path";
 import * as cheerio from "cheerio";
 import { PluginOption, ResolvedConfig } from "vite";
 import { minify } from "html-minifier-terser";
+import MagicString from "magic-string";
 
 const isKai3 = process.env.KAIOS == "3";
+const isCanary = process.env.CANARY == "1";
 // the plugin should only work if you're building for KaiOS
 const production = process.env.NODE_ENV === "production";
 
@@ -14,7 +16,7 @@ const polyfillScript =
 		await esbuild.build({
 			entryPoints: [`${__dirname}/polyfills/polyfills.mjs`],
 			bundle: true,
-			minify: true,
+			minify: !isCanary,
 			target: isKai3 ? "es2020" : "es6",
 			format: "iife",
 			sourcemap: false,
@@ -271,6 +273,8 @@ const polyfillScript =
 		})
 	).outputFiles[0].text || "";
 
+const forConstRegex = /for((\s?)*)\(((\s?)*)const/g;
+
 /**
  *
  * @returns {import("vite").Plugin | undefined}
@@ -299,7 +303,7 @@ export default function polyfillKaiOS(): PluginOption {
 				});
 
 				$("head").prepend(
-					`<script src="polyfills.js" defer></script><script src="libsignal-protocol.js" defer></script>`
+					`<script src="libsignal-protocol.js" async></script><script src="polyfills.js" defer></script>`
 				);
 
 				$("link").each(function () {
@@ -330,7 +334,6 @@ export default function polyfillKaiOS(): PluginOption {
 			},
 
 			generateBundle(options, bundle) {
-				const regexp = /for((\s?)*)\(((\s?)*)const/g;
 				for (const fileName in bundle) {
 					// minify the json files
 					if (fileName.endsWith(".json")) {
@@ -344,9 +347,20 @@ export default function polyfillKaiOS(): PluginOption {
 					if (fileName.endsWith(".js") && !isKai3) {
 						const output = bundle[fileName];
 						if (output && "code" in output) {
-							const code = output.code.replace(regexp, "for(let  ");
+							const code = output.code;
 							if (!code) continue;
-							output.code = code;
+
+							const magicString = new MagicString(code);
+
+							magicString.replaceAll(forConstRegex, "for(let  ");
+
+							output.code = magicString.toString();
+							if (options.sourcemap)
+								output.map = magicString.generateMap({
+									hires: true,
+									source: fileName,
+									includeContent: true,
+								});
 						}
 					}
 				}
@@ -361,25 +375,36 @@ export function polyfillKaiOSWorker(): PluginOption {
 
 			generateBundle(options, bundle) {
 				if (isKai3) return;
-				const regexp = /for((\s?)*)\(((\s?)*)const/g;
 				for (const fileName in bundle) {
 					if (fileName.endsWith(".js")) {
 						const output = bundle[fileName];
 						if (output && "code" in output) {
-							const code = output.code.replace(regexp, "for(let  ");
+							const code = output.code;
 							if (!code) continue;
+
+							const magicString = new MagicString(code);
+
+							magicString.replaceAll(forConstRegex, "for(let  ");
+
 							// add import for polyfills for workers
 
 							// we only need this polyfill in service worker
 							if (fileName.startsWith("sw")) {
-								output.code =
-									`Object.hasOwnProperty("getOwnPropertyDescriptors")||Object.defineProperty(Object,"getOwnPropertyDescriptors",{configurable:!0,writable:!0,value:function(e){return Reflect.ownKeys(e).reduce((t,r)=>Object.defineProperty(t,r,{configurable:!0,enumerable:!0,writable:!0,value:Object.getOwnPropertyDescriptor(e,r)}),{})}});` +
-									code;
-
-								return;
+								magicString.prepend(
+									`Object.hasOwnProperty("getOwnPropertyDescriptors")||Object.defineProperty(Object,"getOwnPropertyDescriptors",{configurable:!0,writable:!0,value:function(e){return Reflect.ownKeys(e).reduce((t,r)=>Object.defineProperty(t,r,{configurable:!0,enumerable:!0,writable:!0,value:Object.getOwnPropertyDescriptor(e,r)}),{})}});`
+								);
+							} else {
+								magicString.prepend(`self.__POLYFILL__||(importScripts("/polyfills.js"),self.__POLYFILL__=!0);`);
 							}
 
-							output.code = 'self.__POLYFILL__||(importScripts("/polyfills.js"),self.__POLYFILL__=!0);' + code;
+							output.code = magicString.toString();
+
+							if (options.sourcemap)
+								output.map = magicString.generateMap({
+									hires: true,
+									source: fileName,
+									includeContent: true,
+								});
 						}
 					}
 				}

@@ -23,6 +23,7 @@ type API = typeof _api;
 
 interface ConverseApi extends API {
 	listen: {
+		// these are actually wrong lol
 		on: EventEmitter2["on"];
 		once: EventEmitter2["on"];
 	};

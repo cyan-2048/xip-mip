@@ -1,6 +1,7 @@
 import { Store, StoreValue } from "nanostores";
 import { Accessor, createRenderEffect, createSignal, onCleanup, untrack } from "solid-js";
 import { useStore as _useStore } from "@nanostores/solid";
+import scrollIntoViewNPM from "scroll-into-view";
 
 export const NOOP = () => {};
 
@@ -55,4 +56,16 @@ export function useStore<SomeStore extends Store, Value extends StoreValue<SomeS
 	}
 
 	return _useStore(store);
+}
+
+export function centerScroll(el: HTMLElement | Element, sync = false, time = 200) {
+	return new Promise<boolean>((res) => {
+		scrollIntoViewNPM(
+			el as HTMLElement,
+			{ time: sync ? 0 : time, align: { left: 0 }, ease: (e: number) => e },
+			(type: string) => {
+				res(type === "complete");
+			}
+		);
+	});
 }
