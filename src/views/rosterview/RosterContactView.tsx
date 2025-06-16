@@ -164,8 +164,6 @@ function RosterItem(props: {
 		}
 	});
 
-	const isSelf = createMemo(() => props.jid === _converse.session.get("bare_jid"));
-
 	const [focused, setFocused] = createSignal(false);
 
 	return (
@@ -178,9 +176,7 @@ function RosterItem(props: {
 					top={
 						<>
 							<DialogName>
-								<MarqueeOrNot marquee={focused()}>
-									{props.displayName} {isSelf() ? "(me)" : ""}
-								</MarqueeOrNot>
+								<MarqueeOrNot marquee={focused()}>{props.displayName}</MarqueeOrNot>
 							</DialogName>
 							<DialogTime></DialogTime>
 						</>
@@ -230,17 +226,25 @@ export default function RosterContactView(props: { model: RosterContact | Profil
 				let displayNameContext: null | { context: "roster" } = null;
 				let vcard: VCard | null = null;
 
-				if (props.model.get("requesting") === true) {
-					setContactType(ContactTypes.Requesting);
-					vcard = props.model.vcard;
-				} else if (!props.model.get("subscription")) {
-					setContactType(ContactTypes.Unsaved);
-					vcard = props.model.vcard;
-				} else {
+				while (true) {
+					if (props.model instanceof _converse.exports.RosterContact) {
+						if (props.model.get("requesting") === true) {
+							setContactType(ContactTypes.Requesting);
+							vcard = props.model.vcard;
+							break;
+						} else if (!props.model.get("subscription")) {
+							setContactType(ContactTypes.Unsaved);
+							vcard = props.model.vcard;
+							break;
+						}
+					}
+
 					displayNameContext = { context: "roster" };
 					setContactType(ContactTypes.Default);
 					setStatus(props.model.getStatus() || "offline");
 					setSubscription(props.model.get("subscription"));
+
+					break;
 				}
 
 				setDisplayName(

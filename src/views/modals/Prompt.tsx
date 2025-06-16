@@ -3,6 +3,7 @@ import softkeys from "@components/Softkeys.module.scss";
 import ModalContainer from "./ModalContainer";
 import ModalHeader from "./ModalHeader";
 import { onCleanup, onMount } from "solid-js";
+import { sleep } from "@/utils";
 
 export default function Prompt(props: {
 	title: string;
@@ -24,7 +25,10 @@ export default function Prompt(props: {
 		inputRef.focus();
 	});
 
+	let clean = false;
+
 	onCleanup(() => {
+		clean = true;
 		lastFocusedElement.focus();
 	});
 
@@ -35,16 +39,19 @@ export default function Prompt(props: {
 				{props.text}
 				<input
 					ref={inputRef}
+					onBlur={(e) => {
+						const target = e.currentTarget;
+						if (!clean) {
+							sleep().then(() => {
+								target.focus();
+							});
+						}
+					}}
 					onKeyDown={(e) => {
 						e.stopImmediatePropagation();
 						e.stopPropagation();
 
-						if (
-							e.key == "SoftLeft" ||
-							e.key == "SoftRight" ||
-							e.key == "Backspace" ||
-							e.key == "EndCall"
-						) {
+						if (e.key == "SoftLeft" || e.key == "SoftRight" || e.key == "Backspace" || e.key == "EndCall") {
 							if (e.key == "Backspace" && e.currentTarget.value != "") return;
 							e.preventDefault();
 							props.onClose(e.key == "SoftRight" ? e.currentTarget.value : null);

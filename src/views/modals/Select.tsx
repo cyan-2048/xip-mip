@@ -5,11 +5,12 @@ import ModalHeader from "./ModalHeader";
 import { createUniqueId, For, onCleanup, onMount } from "solid-js";
 import SpatialNavigation from "@/lib/spatial_navigation";
 import scrollIntoView from "scroll-into-view-if-needed";
+import { sleep } from "@/utils";
 
-export default function Select(props: {
-	items: [string, any][];
-	selected: any;
-	onClose: (val: any) => void;
+export default function Select<T = unknown>(props: {
+	items: [string, T][];
+	selected: T;
+	onClose: (val: T | null) => void;
 }) {
 	let lastFocusedElement!: HTMLElement;
 
@@ -27,7 +28,10 @@ export default function Select(props: {
 		SpatialNavigation.focus(SN_ID);
 	});
 
+	let clean = false;
+
 	onCleanup(() => {
+		clean = true;
 		SpatialNavigation.remove(SN_ID);
 		lastFocusedElement?.focus();
 	});
@@ -90,6 +94,14 @@ export default function Select(props: {
 							tabIndex={-1}
 							on:sn-enter-down={() => {
 								props.onClose(value);
+							}}
+							onBlur={(e) => {
+								const target = e.currentTarget;
+								if (!clean) {
+									sleep().then(() => {
+										if (!document.activeElement?.classList.contains(SN_ID)) target.focus();
+									});
+								}
 							}}
 						>
 							{text}

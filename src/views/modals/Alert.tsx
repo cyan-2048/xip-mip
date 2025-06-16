@@ -3,6 +3,7 @@ import softkeys from "@components/Softkeys.module.scss";
 import ModalContainer from "./ModalContainer";
 import ModalHeader from "./ModalHeader";
 import { onCleanup, onMount } from "solid-js";
+import { sleep } from "@/utils";
 
 export default function Alert(props: { title: string; text: string; onClose: () => void }) {
 	let lastFocusedElement!: HTMLElement;
@@ -15,7 +16,10 @@ export default function Alert(props: { title: string; text: string; onClose: () 
 		divRef.focus();
 	});
 
+	let clean = false;
+
 	onCleanup(() => {
+		clean = true;
 		lastFocusedElement.focus();
 	});
 
@@ -30,6 +34,14 @@ export default function Alert(props: { title: string; text: string; onClose: () 
 					if (e.key == "Enter" || e.key == "Backspace" || e.key == "EndCall") {
 						e.preventDefault();
 						props.onClose();
+					}
+				}}
+				onBlur={(e) => {
+					const target = e.currentTarget;
+					if (!clean) {
+						sleep().then(() => {
+							target.focus();
+						});
 					}
 				}}
 				ref={divRef}

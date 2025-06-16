@@ -29,8 +29,6 @@ class _RosterView extends CustomElement {
 		super();
 	}
 
-	timer!: ReturnType<typeof setTimeout>;
-
 	setState(
 		state: {
 			id: string;
@@ -38,17 +36,11 @@ class _RosterView extends CustomElement {
 			name: string;
 		}[]
 	) {
-		clearTimeout(this.timer);
-
-		this.timer = setTimeout(() => {
-			console.log("ACTUALLY RENDERING");
-			this._setState(reconcile(state));
-		}, 500);
+		console.log("Render CALLED!");
+		this._setState(reconcile(state));
 	}
 
 	render = () => {
-		console.log("Render CALLED!");
-
 		// const roster = [...(state.roster || []), ...(_converse.api.settings.get("show_self_in_roster") ? [state.xmppstatus] : [])];
 
 		const roster = [...(_converse.state.roster || []), _converse.state.xmppstatus];

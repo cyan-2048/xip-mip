@@ -229,11 +229,12 @@ export default function Login() {
 
 	const SN_ID = createUniqueId();
 
+	const updateSoftkeys = () => setSoftkeys("Exit", "Select", "");
+
 	onMount(() => {
 		_splashDone.promise.then(() => {
 			setStatusbarColor("#320574");
 		});
-		setSoftkeys("Exit", "Select", "");
 
 		SpatialNavigation.add(SN_ID, {
 			selector: `.${SN_ID}`,
@@ -270,6 +271,7 @@ export default function Login() {
 							on:sn-enter-down={() => {
 								alert("Unfortunately, you cannot create an account yet :(");
 							}}
+							onFocus={updateSoftkeys}
 							class={SN_ID}
 							tabIndex={0}
 						>
@@ -279,6 +281,7 @@ export default function Login() {
 							on:sn-enter-down={() => {
 								setShowLogin(true);
 							}}
+							onFocus={updateSoftkeys}
 							class={SN_ID}
 							tabIndex={0}
 						>

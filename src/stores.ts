@@ -90,6 +90,14 @@ function loginSucessful() {
 	_loginCheckDone.resolve();
 }
 
+async function waitAll() {
+	await api.waitUntil("chatBoxesFetched");
+
+	// trying to mask out the lag spike
+	// (this could be solved by using a web worker, but like this is converse.js)
+	await sleep(1000);
+}
+
 function initConvo() {
 	// const log = _converse.log;
 
@@ -118,7 +126,7 @@ function initConvo() {
 
 		console.log("Handlers ready!");
 
-		_converse_ready.resolve();
+		waitAll().then(() => _converse_ready.resolve());
 
 		// emoji don't seem to be getting initialized,
 		// so let's do it manually
